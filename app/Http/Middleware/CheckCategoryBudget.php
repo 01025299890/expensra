@@ -63,6 +63,32 @@ class CheckCategoryBudget
                 'requires_confirmation' => true 
             ], 409); 
         }
+        if ( $totalSpent < $userCategoryBudget->limit_amount && $totalSpent / $userCategoryBudget->limit_amount >= 0.8 ) {
+            return response()->json([
+                'status' => 'budget_warning', 
+                'message' => "لقد اقتربت من تجاوز ميزانية {$categoryName}. هل تريد الاستمرار؟",
+                'details' => [
+                    'limit' => $userCategoryBudget->limit_amount,
+                    'current_spent' => $categorySpent,
+                    'remaining' => max(0, $userCategoryBudget->limit_amount - $categorySpent),
+                    'transaction_amount' => $newAmount
+                ],
+                'requires_confirmation' => true 
+            ], 200); 
+        }
+        if( $totalSpent == $userCategoryBudget->limit_amount ) {
+            return response()->json([
+                'status' => 'budget_warning', 
+                'message' => "لقد وصلت إلى حد ميزانية {$categoryName}. هل تريد الاستمرار؟",
+                'details' => [
+                    'limit' => $userCategoryBudget->limit_amount,
+                    'current_spent' => $categorySpent,
+                    'remaining' => max(0, $userCategoryBudget->limit_amount - $categorySpent),
+                    'transaction_amount' => $newAmount
+                ],
+                'requires_confirmation' => true 
+            ], 200);
+        }
 
         return $next($request);
     }

@@ -17,12 +17,12 @@ class TransactionFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => rand(1, 2), 
-            'category_id' => rand(1, 10), 
-            'amount' => fake()->randomFloat(2, 10, 20000),
-            'transaction_type' => fake()->randomElement(['income', 'expense']),
-            'transaction_date' => fake()->dateTimeBetween('-1 year', 'now'),
-            'notes' => fake()->sentence(),
+            // 'user_id' => rand(1, 2), 
+            // 'category_id' => rand(1, 10), 
+            // 'amount' => fake()->randomFloat(2, 10, 20000),
+            // 'transaction_type' => fake()->randomElement(['income', 'expense']),
+            // 'transaction_date' => fake()->dateTimeBetween('-1 year', 'now'),
+            // 'notes' => fake()->sentence(),
         ];
     }
 }

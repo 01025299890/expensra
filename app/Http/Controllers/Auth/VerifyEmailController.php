@@ -39,4 +39,5 @@ class VerifyEmailController extends Controller
 
         return response()->json(['message' => 'الكود غير صحيح أو انتهت صلاحيته'], 422);
     }
+
 }

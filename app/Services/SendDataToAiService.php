@@ -10,7 +10,18 @@ class SendDataToAiService
 
     public function sendToAi($request)
     {
-        $url = "https://webhook.site/7d3e67f2-37b3-4321-8e8e-1af5d2cde21e";
+        
+        if($request['type'] == 'image') {
+            
+            $url = "https://ahmedhamdymohameds-expensra-ai-v3.hf.space/predict_image";
+        }
+        if($request['type'] == 'voice') {
+            $url = "https://ahmedhamdymohameds-expensra-ai-v3.hf.space/predict_voice_file";
+        }
+        if($request['type'] != 'image' && $request['type'] != 'voice') {
+            return [];
+        }
+        unset($request['type']);
 
         $httpRequest = Http::asMultipart()->timeout(60);
         

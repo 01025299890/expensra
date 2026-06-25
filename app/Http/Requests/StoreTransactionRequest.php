@@ -28,25 +28,26 @@ class StoreTransactionRequest extends FormRequest
             'transaction_date' => 'date|nullable',
             'notes' => 'nullable|string',
             'confidence' => 'nullable|numeric|min:0|max:1',
+            'force_save' => 'nullable',
         ];
     }
 
         public function messages(): array
         {
             return [
-                'user_id.required' => 'User ID is required.',
-                'user_id.exists' => 'The specified user does not exist.',
-                'category_id.required' => 'Category ID is required.',
-                'category_id.exists' => 'The specified category does not exist.',
-                'amount.required' => 'Amount is required.',
-                'amount.numeric' => 'Amount must be a number.',
-                'transaction_type.required' => 'Transaction type is required.',
-                'transaction_type.in' => 'Transaction type must be either income or expense.',
-                'transaction_date.date' => 'Transaction date must be a valid date.',
-                'notes.string' => 'Notes must be a string.',
-                'confidence.numeric' => 'internal server error.',
-                'confidence.min' => 'internal server error.',
-                'confidence.max' => 'internal server error.'
+                'user_id.required' => 'الرجاء تسجيل الدخول أولاً.',
+                'user_id.exists' => 'المستخدم غير موجود.',
+                'category_id.required' => 'معرف الفئة مطلوب.',
+                'category_id.exists' => 'الفئة المحددة غير موجودة.',
+                'amount.required' => 'المبلغ مطلوب.',
+                'amount.numeric' => 'المبلغ يجب أن يكون رقمًا.',
+                'transaction_type.required' => 'نوع المعاملة مطلوب.',
+                'transaction_type.in' => 'نوع المعاملة يجب أن يكون إما دخل أو مصروف.',
+                'transaction_date.date' => 'تاريخ المعاملة يجب أن يكون تاريخًا صحيحًا.',
+                'notes.string' => 'الملاحظات يجب أن تكون نصًا.',
+                'confidence.numeric' => 'خطأ في الخادم الداخلي.',
+                'confidence.min' => 'خطأ في الخادم الداخلي.',
+                'confidence.max' => 'خطأ في الخادم الداخلي.'
                 
             ];
         }

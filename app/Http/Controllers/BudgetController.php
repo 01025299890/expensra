@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateBudgetRequest;
 use App\Models\Budget;
+use App\Models\Transaction;
 use App\Services\BudgetService;
 use GuzzleHttp\Psr7\Message;
 use Illuminate\Http\Request;
@@ -14,7 +15,8 @@ use Illuminate\Support\Facades\Auth;
 class BudgetController extends Controller
 {
     protected $budgetService;
-    public function __construct(BudgetService $budgetService){
+    public function __construct(BudgetService $budgetService)
+    {
         $this->budgetService = $budgetService;
     }
     /**
@@ -25,7 +27,7 @@ class BudgetController extends Controller
         $user = Auth::user();
         $budgets = $this->budgetService->index($user);
 
-        if($budgets->isEmpty()){
+        if ($budgets->isEmpty()) {
             return response()->json([
                 'Message' => 'ليس لديك أي ميزانيات حتى الآن، قم بإنشاء ميزانية جديدة لتتبع نفقاتك بشكل أفضل.',
                 'Budgets' => []
@@ -35,7 +37,8 @@ class BudgetController extends Controller
             [
                 'Message' => 'كل الميزانيات الخاصة بك',
                 'Budgets' => $budgets
-            ]);
+            ]
+        );
     }
 
     /**
@@ -44,22 +47,42 @@ class BudgetController extends Controller
     public function store(StoreBudgetRequest $request)
     {
         $userId = Auth::id();
+        $user = Auth::user();
         $validatedData = $request->validated();
+        $allIncome = $user->transactions()->Incomes()->sum('amount');
+        // $remainingBudget = $allIncome - $user->budgets()->sum('limit_amount');
         $budgetStored = $this->budgetService->store($validatedData, $userId);
-        if(!$budgetStored){
-            return response()->json(['Message' => 'غير قادر على انشاء الميزانية'], 500);
+
+        // حالة: تجاوز الدخل
+        // if ($budgetStored === 'insufficient_income') {
+        //     return response()->json([
+        //         'message' => 'لا يمكنك إنشاء ميزانية جديدة لأن الدخل الحالي لا يغطي الحدود المطلوبة.',
+        //         'total_income' => $allIncome,
+        //         'Your_total_budget' => $user->budgets()->sum('limit_amount'),
+        //         'remaining_budget' => $remainingBudget,
+        //         'required_budget' => $validatedData['limit_amount'],
+        //         'suggestion' => 'يرجى تقليل حدود الميزانية أو زيادة دخلك لتتمكن من إنشاء هذه الميزانية.'
+        //     ], 400);
+        // }
+
+        // حالة: خطأ غير متوقع في قاعدة البيانات
+        if (!$budgetStored) {
+            return response()->json(['message' => 'غير قادر على انشاء الميزانية حالياً'], 500);
         }
+
+        // حالة: تم الإنشاء بنجاح
         if ($budgetStored->wasRecentlyCreated) {
             return response()->json([
                 'message' => 'تم انشاء الميزانية بنجاح',
                 'data' => $budgetStored->load('category')
             ], 201);
-        } else {
-            return response()->json([
-                'message' => 'الميزانية موجودة بالفعل لهذه الفئة والفترة الزمنية. تم إرجاع الميزانية الموجودة يمكنك تعديلها عبر زر تعديل',
-                'data' => $budgetStored->load('category')
-            ], 200); // رجعنا 200 لأنها موجودة فعلاً مش لسه مكرية
         }
+
+        // حالة: الميزانية موجودة مسبقاً
+        return response()->json([
+            'message' => 'يوجد ميزانية مسبقاً بنفس الفئة، يرجى تعديل الميزانية الحالية بدلاً من إنشاء واحدة جديدة.',
+            'data' => $budgetStored->load('category')
+        ], 200);
     }
 
     /**
@@ -69,9 +92,9 @@ class BudgetController extends Controller
     {
         $user = Auth::user();
         $budget = $this->budgetService->show($id, $user);
-            if(!$budget){
-                return response()->json(['Message' => 'Budget not found or not authorized to view.'], 404);
-            }
+        if (!$budget) {
+            return response()->json(['Message' => 'هذه الميزانية غير موجودة.'], 404);
+        }
         return response()->json($budget->load('category'));
     }
 
@@ -84,12 +107,12 @@ class BudgetController extends Controller
         $validatedData = $request->validated();
         $budgetUpdated = $this->budgetService->update($id, $validatedData, $user);
 
-        if(!$budgetUpdated){
-            return response()->json(['Message' => 'Budget not found or not authorized to update.'], 404);
+        if (!$budgetUpdated) {
+            return response()->json(['Message' => 'هذه الميزانية غير موجودة أو غير مصرح لك بتحديثها.'], 404);
         }
 
         return response()->json([
-            'Message' => 'Budget updated successfully.',
+            'Message' => 'تم تحديث الميزانية بنجاح.',
             'Budget' => $budgetUpdated
         ]);
     }
@@ -101,9 +124,9 @@ class BudgetController extends Controller
     {
         $user = Auth::user();
         $deleted = $this->budgetService->destroy($id, $user);
-        if(!$deleted){
-            return response()->json(['Message' => 'Budget not found or not authorized to delete.'], 404);
+        if (!$deleted) {
+            return response()->json(['Message' => 'هذه الميزانية غير موجودة أو غير مصرح لك بحذفها.'], 404);
         }
-        return response()->json(['Message' => 'Budget deleted successfully.']);
+        return response()->json(['Message' => 'تم حذف الميزانية بنجاح.']);
     }
 }

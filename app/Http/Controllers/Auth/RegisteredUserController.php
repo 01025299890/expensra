@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use \Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules;
+use App\Mail\VerifyOtpMail;
 
 class RegisteredUserController extends Controller
 {
@@ -52,7 +53,7 @@ class RegisteredUserController extends Controller
             ], 500);
         }
 
-        event(new Registered($user));
+        // event(new Registered($user));
 
         // 4. إصدار التوكن (Sanctum) لكي يتمكن من استخدامه في دالة verify-otp
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -62,5 +63,45 @@ class RegisteredUserController extends Controller
             'access_token' => $token,
             'token_type' => 'Bearer',
         ], 201);
+    }
+
+
+
+
+    /**
+     * إعادة إرسال كود التحقق للمستخدم الحالي.
+     */
+    public function resendOtp(Request $request)
+    {
+        $user = $request->user();
+
+        // 1. التأكد أن الحساب لم يتم تفعيله مسبقاً
+        if ($user->email_verified_at) {
+            return response()->json([
+                'message' => 'هذا الحساب مفعل بالفعل.'
+            ], 400);
+        }
+
+        // 2. توليد كود جديد وتحديث وقت الانتهاء
+        $otp = rand(100000, 999999);
+        $user->update([
+            'otp' => $otp,
+            'otp_expires_at' => now()->addMinutes(15),
+        ]);
+
+        // 3. إرسال الإيميل
+        try {
+            Mail::to($user->email)
+                ->send(new VerifyOtpMail($otp));
+
+            return response()->json([
+                'message' => 'تم إعادة إرسال كود التحقق بنجاح.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'فشل إرسال البريد الإلكتروني، حاول لاحقاً.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

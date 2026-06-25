@@ -21,7 +21,12 @@ class Budget extends Model
       return $this->belongsTo(Category::class);
     }
 
+  public function transactions()
+  {
+    return $this->hasMany(Transaction::class, 'category_id', 'category_id')
+      ->whereColumn('transactions.user_id', 'budgets.user_id');
+  }
     public function user(){
       return $this->belongsTo(User::class);
-    }
+    }  
 }

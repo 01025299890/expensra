@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
             $table->decimal('amount', 15, 2)->nullable(false);
             $table->enum('transaction_type', ['income', 'expense'])->nullable(false);
-            $table->date('transaction_date')->nullable(false);
+            $table->dateTime('transaction_date')->nullable(false);
             $table->text('notes')->nullable();
             $table->timestamps();
             $table->index(['user_id', 'transaction_date']);

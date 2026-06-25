@@ -17,10 +17,10 @@ class CategoryFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => rand(1, 2),
-            'name' => fake()->word() . ' ' . fake()->randomNumber(5),
-            'icon' => fake()->imageUrl(64, 64, 'finance', true),
-            'type' => fake()->randomElement(['income', 'expense']),
+            // 'user_id' => rand(1, 2),
+            // 'name' => fake()->word() . ' ' . fake()->randomNumber(5),
+            // 'icon' => fake()->imageUrl(64, 64, 'finance', true),
+            // 'type' => fake()->randomElement(['income', 'expense']),
         ];
     }
 }

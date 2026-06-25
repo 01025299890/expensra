@@ -1,76 +1,189 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Category;
-use App\Models\User;
+use App\Models\Transaction;
+// use Illuminate\Support - Collection;
 
 class UserCategoriesService
 {
-    public function userCategories( $user)
+    /**
+     * جلب كافة التصنيفات المتاحة للمستخدم (العامة + الخاصة به)
+     */
+    public function userCategories($user, $month = null, $year = null)
     {
-        $userCategories = $user->categories()->withCount('transactions')->with('transactions')->orderBy('transactions_count', 'desc')->get();
-        return $userCategories;
-        // $userCategories = $user->categories()->with('transactions')->orderBy('created_at', 'desc')->get();
-        // return $userCategories;
+        $month = $month ?? now()->month;
+        $year = $year ?? now()->year;
+
+        return Category::visibleToUser()
+            // 1. تصفية الفئات: الاحتفاظ فقط بالفئات التي تمتلك معاملات في هذا الشهر
+            ->whereHas('transactions', function ($query) use ($user, $month, $year) {
+                $query->where('user_id', $user->id) // استخدام الـ PK الفعلي من الـ ERD
+                    ->whereYear('transaction_date', $year)
+                    ->whereMonth('transaction_date', $month);
+            })
+            // 2. جلب المعاملات المفلترة لتعرض داخل الفئات المسترجعة
+            ->with([
+                'transactions' => function ($query) use ($user, $month, $year) {
+                    $query->where('user_id', $user->id)
+                        ->whereYear('transaction_date', $year)
+                        ->whereMonth('transaction_date', $month);
+                }
+            ])
+            ->get();
     }
 
     /**
-     * Summary of expensesByCategory
-     * @param mixed $user
-     * @return array{total_expenses: mixed}
-     * expenses()   function in transaction model
-     * categoryExpenses() function in category model
+     * حساب المصاريف لكل فئة (بما في ذلك الفئات العامة)
      */
-    public function expensesByCategory($user)
+    public function expensesByCategory($user, $month = null, $year = null)
     {
-        $totalExpenses = $user->transactions()->expenses()->sum('amount');
-        $totalExpenses =['total_expenses' => $totalExpenses];
-        $categories = $user->categories()->categoryExpenses()
-            ->with(['transactions' => function ($query) {
-                $query->expenses();
-            }])
-            ->get();
+        // خذ الشهر والسنة الحاليين كقيم افتراضية إذا لم يتم تمريرهم
+        $month = $month ?? now()->month;
+        $year = $year ?? now()->year;
 
-        $expensesByCategory = $categories->map(function ($category) {
-            return
-            [
-                'category_name' => $category->name,
-                'category_icon' => $category->icon,
-                'expenses' => $category->transactions->sum('amount'),
-            ];
-        });
-        $expensesByCategory = ['expenses_by_category' => $expensesByCategory];
-        $expenses = array_merge($totalExpenses, $expensesByCategory);
-        return $expenses;
+        // 1. حساب إجمالي المصاريف للمستخدم في هذا الشهر مباشرة من الداتا بيز
+        $totalExpenses = $user->transactions()
+            ->expenses()
+            ->whereYear('transaction_date', $year)
+            ->whereMonth('transaction_date', $month)
+            ->sum('amount');
+
+        // 2. جلب الفئات النشطة فقط وحساب مجموع مصاريفها في خطوة واحدة
+        $expensesByCategory = Category::visibleToUser()
+            // بنضمن إننا مش هنجيب غير الفئات اللي ليها مصاريف فعلاً في الشهر ده
+            ->whereHas('transactions', function ($query) use ($user, $month, $year) {
+                $query->where('user_id', $user->id)
+                    ->expenses()
+                    ->whereYear('transaction_date', $year)
+                    ->whereMonth('transaction_date', $month);
+            })
+            // بنحسب المجموع مباشرة من الداتا بيز في حقل ديناميكي اسمه expenses
+            ->withSum([
+                'transactions as expenses' => function ($query) use ($user, $month, $year) {
+                    $query->where('user_id', $user->id)
+                        ->expenses()
+                        ->whereYear('transaction_date', $year)
+                        ->whereMonth('transaction_date', $month);
+                }
+            ], 'amount')
+            ->get()
+            // عمل Map خفيف فقط لتشكيل الـ الـ Response المطلوب
+            ->map(function ($category) {
+                return [
+                    'category_name' => $category->name,
+                    'category_icon' => $category->icon,
+                    'expenses' => number_format($category->expenses ?? 0, 2, '.', ''),
+                ];
+            });
+
+        return [
+            'total_expenses' => number_format($totalExpenses, 2, '.', ''),
+            'expenses_by_category' => $expensesByCategory
+        ];
     }
+
     /**
-     * Summary of incomesByCategory
-     * @param mixed $user
-     * @return array{total_incomes: mixed}
-     * incomes()   function in transaction model
-     * categoryIncomes() function in category model
+     * حساب الدخل لكل فئة (بما في ذلك الفئات العامة)
      */
-    public function incomesByCategory($user)
+    public function incomesByCategory($user, $month = null, $year = null)
     {
-            $totalIncomes = $user->transactions()->incomes()->sum('amount');
-            $totalIncomes = ['total_incomes' => $totalIncomes];
-        $categories = $user->categories()->categoryIncomes()
-            ->with(['transactions' => function ($query) {
-                $query->incomes();
-            }])
-            ->get();
+        // تحديد الشهر والسنة الحاليين كقيم افتراضية
+        $month = $month ?? now()->month;
+        $year = $year ?? now()->year;
 
-        $incomesByCategory = $categories->map(function ($category) {
-            return [
-                'category_name' => $category->name,
-                'category_icon' => $category->icon,
-                'total_incomes' => $category->transactions->sum('amount'),
-            ];
-        });
-        $incomesByCategory = ['incomes_by_category' => $incomesByCategory];
-        $income = array_merge($totalIncomes, $incomesByCategory);
-        return $income;
+        // 1. حساب إجمالي الدخل للمستخدم في هذا الشهر من الداتا بيز مباشرة
+        $totalIncomes = $user->transactions()
+            ->incomes()
+            ->whereYear('transaction_date', $year)
+            ->whereMonth('transaction_date', $month)
+            ->sum('amount');
+
+        // 2. جلب فئات الدخل النشطة فقط وحساب مجموعها في خطوة واحدة
+        $incomesByCategory = Category::visibleToUser()
+            // الـ الداتا بيز هترجع فقط الفئات اللي دخلها معاملة income في الشهر ده
+            ->whereHas('transactions', function ($query) use ($user, $month, $year) {
+                $query->where('user_id', $user->id)
+                    ->incomes()
+                    ->whereYear('transaction_date', $year)
+                    ->whereMonth('transaction_date', $month);
+            })
+            // حساب المجموع مباشرة في الاستعلام وتخزينه في حقل total_incomes
+            ->withSum([
+                'transactions as total_incomes' => function ($query) use ($user, $month, $year) {
+                    $query->where('user_id', $user->id)
+                        ->incomes()
+                        ->whereYear('transaction_date', $year)
+                        ->whereMonth('transaction_date', $month);
+                }
+            ], 'amount')
+            ->get()
+            // تشكيل الـ Response النهائي بشكل خفيف وسريع
+            ->map(function ($category) {
+                return [
+                    'category_name' => $category->name,
+                    'category_icon' => $category->icon,
+                    'total_incomes' => number_format($category->total_incomes ?? 0, 2, '.', ''),
+                ];
+            });
+
+        return [
+            'total_incomes' => number_format($totalIncomes, 2, '.', ''),
+            'incomes_by_category' => $incomesByCategory
+        ];
     }
 
-
+    public function remainingAmount($user)
+    {
+        // حساب مصاريف الشهر الحالي
+        $allExpenses = $user->transactions()
+            ->where('transaction_type', 'expense')
+            ->whereBetween('transaction_date', [now()->startOfMonth(), now()->endOfMonth()])
+            ->sum('amount');
+    
+        // حساب دخل الشهر الحالي
+        $allIncome = $user->transactions()
+            ->where('transaction_type', 'income')
+            ->whereBetween('transaction_date', [now()->startOfMonth(), now()->endOfMonth()])
+            ->sum('amount');
+            $remainingAmount = $allIncome - $allExpenses;
+    
+        // المتبقي الصافي المظبوط
+        return $remainingAmount >= 0 ? number_format($remainingAmount, 2, '.', '') : '0.00';
+    }
+    
+    public function lastMonthExpenses($user)
+    {
+        $startOfLastMonth = now()->subMonth()->startOfMonth()->format('Y-m-d H:i:s');
+        $endOfLastMonth = now()->subMonth()->endOfMonth()->format('Y-m-d H:i:s');
+        // حساب مصاريف الشهر السابق
+        $lastMonthExpenses = $user->transactions()
+            ->where('transaction_type', 'expense')
+            ->whereBetween('transaction_date', [$startOfLastMonth, $endOfLastMonth])
+            ->sum('amount');
+    
+        return number_format($lastMonthExpenses, 2, '.', '');
+    }
+    public function lastMonthIncome($user)
+    {
+        $startOfLastMonth = now()->subMonth()->startOfMonth()->format('Y-m-d H:i:s');
+        $endOfLastMonth = now()->subMonth()->endOfMonth()->format('Y-m-d H:i:s');
+        // حساب دخل الشهر السابق
+        $lastMonthIncome = $user->transactions()
+            ->where('transaction_type', 'income')
+            ->whereBetween('transaction_date', [$startOfLastMonth, $endOfLastMonth])
+            ->sum('amount');
+    
+        return number_format($lastMonthIncome, 2, '.', '');
+    }
+    public function lastMonthRemainingAmount($user)
+    {
+        // حساب مصاريف الشهر السابق
+        $lastMonthExpenses =  $this->lastMonthExpenses($user);
+        // حساب دخل الشهر السابق
+        $lastMonthIncome = $this->lastMonthIncome($user);
+        // المتبقي الصافي المظبوط
+        return $lastMonthIncome - $lastMonthExpenses >= 0 ? number_format($lastMonthIncome - $lastMonthExpenses, 2, '.', '') : '0.00';
+    }
 }

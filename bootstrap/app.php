@@ -18,7 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
-            'check.budget' => \App\Http\Middleware\CheckCategoryBudget::class
+            'check.budget' => \App\Http\Middleware\CheckCategoryBudget::class,
+            'isAdmin' => \App\Http\Middleware\CheckAdmin::class,
+            'isPremium' => \App\Http\Middleware\EnsureUserIsPremium::class,
         ]);
 
         $middleware->append([

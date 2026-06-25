@@ -22,8 +22,8 @@ class SendDataToAiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => 'nullable|file|max:2048',
-            'text' => 'nullable|string|max:1000',
+            'file' => 'file|max:2048',
+            'text' => 'string|max:1000',
         ];
         
     }
@@ -31,10 +31,10 @@ class SendDataToAiRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'file.file' => 'The uploaded file must be a valid file.',
-            'file.max' => 'The uploaded file must not exceed 2MB in size.',
-            'text.string' => 'The text input must be a string.',
-            'text.max' => 'The text input must not exceed 1000 characters.',
+            'file.file' => 'الملف المرفوع يجب أن يكون ملفًا صالحًا.',
+            'file.max' => 'الملف المرفوع لا يمكن أن يتجاوز 2MB في الحجم.',
+            'text.string' => 'الإدخال النصي يجب أن يكون نصًا.',
+            'text.max' => 'الإدخال النصي لا يمكن أن يتجاوز 1000 حرفًا.',
         ];
     }
 }

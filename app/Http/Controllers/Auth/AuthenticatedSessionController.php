@@ -19,7 +19,11 @@ class AuthenticatedSessionController extends Controller
     {
         // 1. التحقق من وجود المستخدم وصحة كلمة المرور
         $user = User::where('email', $request->email)->first();
-
+        if($user && !$user->email_verified_at) {
+            throw ValidationException::withMessages([
+                'email' => ['يرجي تفعيل حسابك أولاً.'],
+            ]);
+        }
         if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['بيانات الدخول غير صحيحة.'],

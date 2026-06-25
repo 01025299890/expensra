@@ -67,13 +67,21 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Budget::class);
     }
+    public function goals()
+    {
+        return $this->hasMany(Goal::class);
+    }
 
+    public function monthlyBudgets()
+    {
+        return $this->hasMany(MonthlyBudget::class, 'user_id', 'id');
+    }
     /**
      * تعطيل إرسال إيميل التحقق الافتراضي
      */
-    public function sendEmailVerificationNotification()
-    {
+    // public function sendEmailVerificationNotification()
+    // {
         
-    }
+    // }
 
 }
