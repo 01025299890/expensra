@@ -31,20 +31,16 @@ class RegisteredUserController extends Controller
 
         $requestData['password'] = Hash::make($requestData['password']);
 
-        // 1. توليد الـ OTP العشوائي
         $otp = rand(100000, 999999);
         $requestData['otp'] = $otp;
         $requestData['otp_expires_at'] = now()->addMinutes(15);
 
-        // 2. إنشاء المستخدم في قاعدة البيانات
         $user = User::create($requestData);
 
-        // 3. إرسال الإيميل فوراً (هذا هو الجزء الذي طلبته)
         try {
             Mail::to($user->email)
                 ->send(new \App\Mail\VerifyOtpMail($otp));
         } catch (\Exception $e) {
-            // لو حصل خطأ في إرسال الإيميل، نحذف المستخدم اللي اتسجل للتو
             $user->delete();
 
             return response()->json([
@@ -53,9 +49,6 @@ class RegisteredUserController extends Controller
             ], 500);
         }
 
-        // event(new Registered($user));
-
-        // 4. إصدار التوكن (Sanctum) لكي يتمكن من استخدامه في دالة verify-otp
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([

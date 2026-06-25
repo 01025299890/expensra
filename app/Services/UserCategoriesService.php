@@ -16,16 +16,11 @@ class UserCategoriesService
         $month = $month ?? now()->month;
         $year = $year ?? now()->year;
 
+        // جلب كل الفئات المتاحة (العامة + الخاصة باليوزر ده) بدون أي تكرار
         return Category::visibleToUser()
-            // 1. تصفية الفئات: الاحتفاظ فقط بالفئات التي تمتلك معاملات في هذا الشهر
-            ->whereHas('transactions', function ($query) use ($user, $month, $year) {
-                $query->where('user_id', $user->id) // استخدام الـ PK الفعلي من الـ ERD
-                    ->whereYear('transaction_date', $year)
-                    ->whereMonth('transaction_date', $month);
-            })
-            // 2. جلب المعاملات المفلترة لتعرض داخل الفئات المسترجعة
             ->with([
                 'transactions' => function ($query) use ($user, $month, $year) {
+                    // بنجلب المعاملات بتاعة اليوزر للشهر ده بس جوه الفئات
                     $query->where('user_id', $user->id)
                         ->whereYear('transaction_date', $year)
                         ->whereMonth('transaction_date', $month);

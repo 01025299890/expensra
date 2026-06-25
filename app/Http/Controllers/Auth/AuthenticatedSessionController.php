@@ -37,7 +37,7 @@ class AuthenticatedSessionController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'message' => 'Login successful',
+            'message' => 'تم تسجيل الدخول بنجاح.',
             'user' => $user,
             'access_token' => $token,
             'token_type' => 'Bearer',
@@ -52,7 +52,7 @@ class AuthenticatedSessionController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
-            'message' => 'Logged out successfully'
+            'message' => 'تم تسجيل الخروج بنجاح.'
         ]);
     }
 }
