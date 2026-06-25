@@ -48,7 +48,7 @@ public function index($user)
         $user->transactions()->create([
             'amount' => $validatedRequest['saved_amount'],
             'transaction_type' => 'expense',
-            'transaction_date' => now()->format('Y-m-d'),
+            'transaction_date' => now()->format('Y-m-d:H:i:s'),
             'notes' => 'إيداع في الهدف: ' . $goal->goal_name,
             'category' => 'Goal Deposit',
             'category_id' => Category::GetOrCreate(
@@ -120,7 +120,7 @@ public function index($user)
             $transactions->storeTransaction([
                 'amount' => $goal->saved_amount,
                 'transaction_type' => 'income',
-                'transaction_date' => now()->format('Y-m-d'),
+                'transaction_date' => now()->format('Y-m-d:H:i:s'),
                 'notes' => 'إرجاع المبلغ المحفوظ بعد حذف الهدف: ' . $goal->goal_name,
                 'category' => 'Goal remove',
             ], $user->id);
@@ -163,7 +163,7 @@ public function index($user)
         $user->transactions()->create([
             'amount' => $validatedRequest['amount'],
             'transaction_type' => 'expense',
-            'transaction_date' => now()->format('Y-m-d'),
+            'transaction_date' => now()->format('Y-m-d:H:i:s'),
             'notes' => 'إيداع في الهدف: ' . $goal->goal_name,
             'category' => 'Goal Deposit',
             'category_id' => $category->id,
