@@ -126,4 +126,11 @@ class TransactionController extends Controller
             'transactions' => $response['transactions']->load('category')
         ]);
     }
+
+    public function lastSixMonthsIncomeAndExpense()
+    {
+        $user = auth()->user();
+        $data = $this->transactionService->lastSixMonthsIncomeAndExpense($user);
+        return response()->json($data);
+    }
 }

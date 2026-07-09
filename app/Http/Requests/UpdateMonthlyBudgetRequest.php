@@ -23,7 +23,7 @@ class UpdateMonthlyBudgetRequest extends FormRequest
     {
         return [
             'amount' => 'sometimes|required|numeric|min:0.01',
-            'start_date' => 'sometimes|required|date|after_or_equal:today',
+            'start_date' => 'prohibited',
             'end_date' => 'sometimes|required|date|after_or_equal:start_date',
         ];
     }
@@ -33,9 +33,7 @@ class UpdateMonthlyBudgetRequest extends FormRequest
             'amount.required' => 'حقل المبلغ مطلوب.',
             'amount.numeric' => 'حقل المبلغ يجب أن يكون رقمًا.',
             'amount.min' => 'حقل المبلغ يجب أن يكون أكبر من 0.',
-            'start_date.required' => 'حقل تاريخ البداية مطلوب.',
-            'start_date.date' => 'حقل تاريخ البداية يجب أن يكون تاريخًا صالحًا.',
-            'start_date.after_or_equal' => 'تاريخ البداية يجب أن يكون بعد أو يساوي التاريخ الحالي.',
+            'start_date.prohibited' => 'تاريخ البداية لا يمكن تعديله يمكنك حذف الميزانية واستخدام خيارات اخرى.',
             'end_date.required' => 'حقل تاريخ النهاية مطلوب.',
             'end_date.date' => 'حقل تاريخ النهاية يجب أن يكون تاريخًا صالحًا.',
             'end_date.after_or_equal' => 'تاريخ النهاية يجب أن يكون بعد أو يساوي تاريخ البداية.',

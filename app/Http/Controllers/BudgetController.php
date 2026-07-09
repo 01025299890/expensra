@@ -69,7 +69,7 @@ class BudgetController extends Controller
         if (!$budgetStored) {
             return response()->json(['message' => 'غير قادر على انشاء الميزانية حالياً'], 500);
         }
-
+        
         // حالة: تم الإنشاء بنجاح
         if ($budgetStored->wasRecentlyCreated) {
             return response()->json([
@@ -125,7 +125,7 @@ class BudgetController extends Controller
         $user = Auth::user();
         $deleted = $this->budgetService->destroy($id, $user);
         if (!$deleted) {
-            return response()->json(['Message' => 'هذه الميزانية غير موجودة أو غير مصرح لك بحذفها.'], 404);
+            return response()->json(['Message' => 'هذه الميزانية غير موجودة أو غير مصرح لك بحذفها.']);
         }
         return response()->json(['Message' => 'تم حذف الميزانية بنجاح.']);
     }

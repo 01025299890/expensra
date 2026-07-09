@@ -17,66 +17,59 @@ class AdminController extends Controller
     public function UsersCount()
     {
         $result = $this->adminService->UsersCount();
-        $status = isset($result['error']) ? 404 : 200;
-        return response()->json($result, $status);
+        
+        return response()->json($result);
     }
 
     public function normalUsersCount()
     {
         $result = $this->adminService->normalUsersCount();
-        $status = isset($result['error']) ? 404 : 200;
-        return response()->json($result, $status);
+        return response()->json($result);
     }
 
     public function premiumUsersCount()
     {
         $result = $this->adminService->premiumUsersCount();
-        $status = isset($result['error']) ? 404 : 200;
-        return response()->json($result, $status);
+       
+        return response()->json($result);
     }
 
 
     public function adminUsersCount()
     {
         $result = $this->adminService->adminUsersCount();
-        $status = isset($result['error']) ? 404 : 200;
-        return response()->json($result, $status);
+        return response()->json($result);
     }
 
     public function allUsers()
     {
         $result = $this->adminService->allUsers();
-        $status = isset($result['error']) ? 404 : 200;
-        return response()->json($result, $status);
+        return response()->json($result);
     }
 
     public function normalUsers()
     {
         $result = $this->adminService->normalUsers();
-        $status = isset($result['error']) ? 404 : 200;
-        return response()->json($result, $status);
+        return response()->json($result);
     }
 
     public function premiumUsers()
     {
         $result = $this->adminService->premiumUsers();
-        $status = isset($result['error']) ? 404 : 200;
-        return response()->json($result, $status);
+        return response()->json($result);
     }
 
     public function adminUsers()
     {
         $result = $this->adminService->adminUsers();
-        $status = isset($result['error']) ? 404 : 200;
-        return response()->json($result, $status);
+        return response()->json($result);
     }
 
-    public function userTransactions($userId)
-    {
-        $result = $this->adminService->usersTransactions($userId);
-        $status = isset($result['error']) ? 404 : 200;
-        return response()->json($result, $status);
-    }
+    // public function userTransactions($userId)
+    // {
+    //     $result = $this->adminService->usersTransactions($userId);
+    //     return response()->json($result);
+    // }
 
     public function searchUsers(Request $request)
     {
@@ -91,15 +84,20 @@ class AdminController extends Controller
         }
 
         $result = $this->adminService->searchUsers($query);
-        $status = isset($result['error']) ? 404 : 200;
 
-        return response()->json($result, $status);
+
+        return response()->json($result);
     }
 
     public function upgradeUserToPremium($userId)
     {
         $result = $this->adminService->upgradeUserToPremium($userId);
-        $status = isset($result['error']) ? 404 : 200;
-        return response()->json($result, $status);
+        return response()->json($result);
+    }
+
+    public function deleteUser($userId)
+    {
+        $result = $this->adminService->deleteUser($userId);
+        return response()->json($result);
     }
 }

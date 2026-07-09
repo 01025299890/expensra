@@ -24,7 +24,7 @@ class UpdateBudgetRequest extends FormRequest
         return [
             // 'category_id' => 'required|exists:categories,id',
             'limit_amount' => 'sometimes|numeric|min:.01',
-            'start_date' => 'sometimes|date|after_or_equal:today',
+            'start_date' => 'prohibited',
             'end_date' => 'sometimes|date|after_or_equal:start_date',
         ];
     }
@@ -36,8 +36,7 @@ class UpdateBudgetRequest extends FormRequest
             // 'category_id.exists' => 'الفئة المحددة غير موجودة.',
             'limit_amount.numeric' => 'مبلغ الحد يجب أن يكون رقمًا.',
             'limit_amount.min' => 'مبلغ الحد يجب أن يكون 0.01 على الأقل.',
-            'start_date.date' => 'تاريخ البدء يجب أن يكون تاريخًا صحيحًا.',
-            'start_date.after_or_equal' => 'تاريخ البدء يجب أن يكون بعد أو يساوي التاريخ الحالي.',
+            'start_date.prohibited' => 'تاريخ البدء لا يمكن تعديله يمكنك حذف الميزانية واستخدام خيارات اخرى.',
             'end_date.date' => 'تاريخ الانتهاء يجب أن يكون تاريخًا صحيحًا.',
             'end_date.after_or_equal' => 'تاريخ الانتهاء يجب أن يكون بعد أو يساوي تاريخ البدء.',
         ];

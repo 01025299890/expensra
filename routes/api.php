@@ -12,14 +12,58 @@ use App\Http\Controllers\MonthlyResetController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\GetNotificationForUserController;
 use App\Http\Controllers\UpgradeController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\UpdatePasswordController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Auth\UpdateProfileController;
+// use Illuminate\Support\Facades\Route;
 use function Pest\Laravel\seed;
 
 
 Route::middleware(['auth:sanctum', 'verified'])->get('/user', function (Request $request) {
     return $request->user();
 });
+
+
+
+
+
+// --- مسارات الضيوف (Guest) ---
+Route::middleware('guest')->group(function () {
+
+    Route::post('/register', [RegisteredUserController::class, 'store'])
+        ->name('register');
+    Route::post('/login', [AuthenticatedSessionController::class, 'store'])
+        ->name('login');
+    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
+        ->name('password.email');
+    Route::post('/reset-password', [NewPasswordController::class, 'store'])
+        ->name('password.store');
+});
+
+
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::post('/verify-otp', [VerifyEmailController::class, 'verifyOtp'])
+        ->name('verification.verify');
+    Route::post('/resend-otp', [RegisteredUserController::class, 'resendOtp'])
+        ->name('verification.resend');
+});
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+    Route::put('/profile/update', [UpdateProfileController::class, 'updateProfile']);
+    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
+        ->name('logout');
+    Route::post('/change-password', [UpdatePasswordController::class, 'update'])
+        ->name('password.change');
+
+});
+
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/transactions/monthly', [TransactionController::class, 'monthlyTransactions']);
+    Route::get('/transactions/last-six-months', [TransactionController::class, 'lastSixMonthsIncomeAndExpense']);
     Route::apiResource('transactions', TransactionController::class)->middleware('check.budget');
     Route::post('/send-to-ai', [SendDataToAiAndStore::class, 'storeByAi']);
     Route::post('/categories', [UserCategoriesController::class, 'userCategories']);
@@ -46,8 +90,9 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
     Route::get('/admin/users/admin/count', [AdminController::class, 'adminUsersCount']);
     Route::get('/admin/users/search', [AdminController::class, 'searchUsers']);
     Route::post('/admin/users/{id}/upgrade', [AdminController::class, 'upgradeUserToPremium']);
+    Route::delete('/admin/users/{id}/delete', [AdminController::class, 'deleteUser']);
 });
 
 
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

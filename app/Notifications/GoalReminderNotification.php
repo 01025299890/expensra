@@ -24,7 +24,7 @@ class GoalReminderNotification extends Notification
     public function toArray($notifiable)
     {
         // ⚡ السحر هنا: بنقرأ الاسم مباشرة من الـ $notifiable لأنه بيمثل الـ User
-        $userName = $notifiable->name ?? 'يا بطل';
+        $userName = $notifiable->first_name ?? 'يا بطل';
         $goalName = $this->goal->goal_name;
         $targetAmount = $this->goal->target_amount;
         $savedAmount = $this->goal->saved_amount;

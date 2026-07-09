@@ -92,6 +92,7 @@ class BudgetService
         if(!$budget){
             return null;
         }
+        
         $budget->update($validatedData);
         $budget->refresh();
         return $budget;

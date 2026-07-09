@@ -59,6 +59,11 @@ class MonthlyBudgetController extends Controller
         if (!$budgetStored) {
             return response()->json(['message' => 'غير قادر على انشاء الميزانية الشهرية حالياً'], 500);
         }
+        if($budgetStored === 'amountSmalerThanExpenses'){
+            return response()->json([
+                'message' => 'لا يمكنك إنشاء ميزانية جديدة لأن المبلغ المحدد أقل من مجموع المصاريف المسجلة في الفترة المحددة.'
+            ], 400);
+        }
 
         // حالة: تم الإنشاء بنجاح
         return response()->json([
@@ -100,6 +105,11 @@ class MonthlyBudgetController extends Controller
 
         if (!$budgetUpdated) {
             return response()->json(['Message' => 'هذه الميزانية غير موجودة أو غير مصرح لك بتحديثها.'], 404);
+        }
+        if($budgetUpdated === 'amountSmalerThanExpenses'){
+            return response()->json([
+                'message' => 'لا يمكنك تعديل الميزانية لأن المبلغ المحدد أقل من مجموع المصاريف المسجلة في الفترة المحددة.'
+            ], 400);
         }
 
         return response()->json([

@@ -52,6 +52,13 @@ class MonthlyBudgetService
         if ($isOverlapping) {
             return 'overlapping';
         }
+        $transaction = Transaction::where('user_id', $userId)
+            ->where('transaction_type', 'expense')
+            ->whereBetween('transaction_date', [$data['start_date'], $data['end_date']])
+            ->sum('amount');
+        if($data['amount'] < $transaction){
+            return 'amountSmalerThanExpenses';
+        }
 
         $data['user_id'] = $userId;
         return MonthlyBudget::create($data);
@@ -104,6 +111,13 @@ class MonthlyBudgetService
         if ($isOverlapping) {
             return 'overlapping';
         }
+        $transaction = Transaction::where('user_id', $user->id)
+            ->where('transaction_type', 'expense')
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->sum('amount');
+        if($data['amount'] < $transaction){
+            return 'amountSmalerThanExpenses';
+        }
 
         $budget->update($data);
         return $budget->refresh();
@@ -117,4 +131,6 @@ class MonthlyBudgetService
         }
         return $budget->delete();
     }
+
+    
 }

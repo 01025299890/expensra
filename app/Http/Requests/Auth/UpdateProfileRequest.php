@@ -24,7 +24,7 @@ class UpdateProfileRequest extends FormRequest
         return [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
         ];
     }
 
@@ -34,7 +34,7 @@ class UpdateProfileRequest extends FormRequest
             'first_name.required' => 'الاسم الأول مطلوب.',
             'last_name.required' => 'الاسم الأخير مطلوب.',
             'profile_image.image' => 'يجب أن تكون الصورة ملف صورة صالح.',
-            'profile_image.mimes' => 'يجب أن تكون الصورة من نوع jpeg, png, jpg, gif.',
+            'profile_image.mimes' => 'يجب أن تكون الصورة من نوع jpeg, png, jpg, gif, svg, webp.',
             'profile_image.max' => 'حجم الصورة يجب ألا يتجاوز 2 ميغابايت.',
         ];
     }
