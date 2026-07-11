@@ -203,6 +203,7 @@ class TransactionService
         foreach ($transactions as $month => $monthTransactions) {
             $income = $monthTransactions->where('transaction_type', 'income')->sum('amount');
             $expense = $monthTransactions->where('transaction_type', 'expense')->sum('amount');
+            
 
             $result[] = [
                 'month' => $month,

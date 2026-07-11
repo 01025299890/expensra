@@ -21,8 +21,8 @@ class UpdateProfileController extends Controller
                 Storage::disk('public')->delete($user->profile_image);
             }
 
-            // 2. رفع الصورة الجديدة في مجلد profiles جوه الـ storage/app/public
-            $path = $request->file('profile_image')->store('profiles', 'public');
+            // 2. رفع الصورة الجديدة في مجلد profile_images جوه الـ storage/app/public
+            $path = $request->file('profile_image')->store('profile_images', 'public');
 
             // 3. حفظ المسار الجديد في الـ داتا
             $data['profile_image'] = $path;
