@@ -113,18 +113,4 @@ Authorization: Bearer <token>
 | Analytics | Income vs. expense trends and category breakdowns |
 | Admin | User auditing, subscription management, growth metrics |
 
----
 
-## Screenshots
-
-Add screenshots or a short demo GIF of the app here.
-
----
-
-## Contributing
-
-Feedback and contributions are welcome. Feel free to open an issue or submit a pull request.
-
-## License
-
-Add your license here (for example, MIT).
